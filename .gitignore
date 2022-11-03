@@ -1,2 +1,4 @@
 test.py
 TEST_testov.py
+*.csv
+dataset

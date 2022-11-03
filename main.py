@@ -1,10 +1,11 @@
 import os
 import sys, random
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication, QWidget,QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5 import QtCore, QtGui, QtWidgets
-
-
+import csv
+from pathlib import Path
+import shutil
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -61,19 +62,19 @@ class Ui_MainWindow(object):
         self.logo_4.setText("")
         self.logo_4.setPixmap(QtGui.QPixmap(f"{os.getcwd()}/img/imgonline-com-ua-Resize-eaZg8IxsenvxUV.png"))
         self.logo_4.setObjectName("logo_4")
-        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit.setGeometry(QtCore.QRect(50, 220, 380, 60))
+        self.fullWay = QtWidgets.QLineEdit(self.centralwidget)
+        self.fullWay.setGeometry(QtCore.QRect(50, 220, 380, 60))
         font = QtGui.QFont()
         font.setFamily("Algerian")
         font.setPointSize(14)
-        self.lineEdit.setFont(font)
-        self.lineEdit.setStyleSheet("background-color:#f5f0e1;\n"
+        self.fullWay.setFont(font)
+        self.fullWay.setStyleSheet("background-color:#f5f0e1;\n"
 "border: 4px solid #1e3d59;\n"
 "border-radius: 30;\n"
 "color:#1e3d59\n"
 "")
-        self.lineEdit.setAlignment(QtCore.Qt.AlignCenter)
-        self.lineEdit.setObjectName("lineEdit")
+        self.fullWay.setAlignment(QtCore.Qt.AlignCenter)
+        self.fullWay.setObjectName("fullWay")
         self.CreateFirstCSV = QtWidgets.QPushButton(self.centralwidget)
         self.CreateFirstCSV.setGeometry(QtCore.QRect(270, 400, 211, 61))
         font = QtGui.QFont()
@@ -189,7 +190,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.NAME.setText(_translate("MainWindow", "The  coolest  app  in  the  world"))
-        self.lineEdit.setText(_translate("MainWindow", "INPUT FULL WAY"))
+        self.fullWay.setText(_translate("MainWindow", "INPUT FULL WAY"))
         self.CreateFirstCSV.setText(_translate("MainWindow", "1.Create the first csv file"))
         self.IMPORTdataset.setText(_translate("MainWindow", "2.Import in thr new dataset"))
         self.RANDOM.setText(_translate("MainWindow", "3.random dataset"))
@@ -197,8 +198,105 @@ class Ui_MainWindow(object):
         self.take.setText(_translate("MainWindow", "take the path"))
         self.EXIT.setText(_translate("MainWindow", "EXIT"))
 
+def make_csv(name_csv: str) -> None:
+    """Функция создает файл разрешения csv
+
+    Args:
+        name_csv (str): _название файла, который нужно создать_
+    """
+    with open(f"{name_csv}.csv", "w+", encoding="UTF-8", newline="") as file:
+        csv_file = csv.writer(file, delimiter=";")
+        csv_file.writerow(["Absolute path", "Relative path", "Class"])
+
+def make_file_abstract(name_class: str, full_way: str, file_name: str) -> None:
+    """Функция заполняет csv файл. В первый столбец полный путь файлов, второй столбец - путь
+
+    Args:
+        name_class (str)): _Название класса_
+        full_way (str): _Полный путь к файлу_
+        file_name (str): _имя файла разрешения csv_
+    """
+    full_way += name_class
+    way = f"dataset/{name_class}/"
+    folder = Path(full_way)
+    if folder.is_dir():
+        counter_files = len([1 for file in folder.iterdir()])  #
+    with open(f"{file_name}.csv", "a", encoding="UTF-8", newline="") as file:
+        csv_file = csv.writer(file, delimiter=";")
+        for i in range(counter_files):
+            csv_file.writerow([full_way + f"/{i}.jpg", way + f"{i}.jpg", name_class])
+
+def porting(name_abstract: str, new_csv: str) -> None:
+    """Функция импортируют файлы из собранного датасета в новый датасет. Файлы именуются по принципу "класс_Имяфайла.jpg"
+        так же функция создает новый csv файл для нового датасета
+
+    Args:
+        name_abstract (str): имя csv из которого берем путь, имя и класс
+        new_csv (str): имя csv файла в которой импортируем новый путь, имя и класс
+    """
+    try:
+        os.mkdir("dataset")
+    except:
+        print("====ФАЙЛ ИМЕЕТСЯ====")
+    with open(f"{name_abstract}.csv", newline="") as file:
+        read = csv.DictReader(file, delimiter=";")
+        with open(f"{new_csv}.csv", "a", encoding="UTF-8", newline="") as file1:
+            csv_file = csv.writer(file1, delimiter=";")
+            for row in read:
+                FROM = row["Absolute path"]
+                a = FROM.split("/")
+                TO = f"dataset/{a[-2]}_{a[-1]}"
+                shutil.copyfile(FROM, TO)
+                name_class = row["Class"]
+
+                fullWay = os.getcwd() + f"\dataset\{a[-2]}_{a[-1]}"
+                Way = f"dataset\{a[-2]}_{a[-1]}"
+                csv_file.writerow([fullWay, Way, name_class])
+
+full_way=''
+check_way=False
 def push_Exit():
     sys.exit(app.exec_())
+def push_takePath():
+    global check_way
+    global full_way
+    full_way=ui.fullWay.text()+"/"
+    if(os.path.exists(ui.fullWay.text()+"/CatIT")==False):
+        msg = QMessageBox()
+        msg.setWindowTitle("Ошибка")
+        msg.setText("файлы не найдены!\nВведите путь еще раз")
+        msg.setIcon(QMessageBox.Warning)
+        msg.exec_()
+        check_way=False
+    else:
+        check_way=True
+        print( full_way)
+
+def script_1():
+     global check_way
+     if(check_way==True):
+        make_csv("Dataset_script1")
+        make_file_abstract("DogsIT", full_way,"Dataset_script1" )
+        make_file_abstract("CatIT", full_way, "Dataset_script1")
+     else:
+        msg = QMessageBox()
+        msg.setWindowTitle("Ошибка!!!")
+        msg.setText("Установлен неверный путь!!!\nВведите путь еще раз!!!")
+        msg.setIcon(QMessageBox.Warning)
+        msg.exec_()
+def script_2():
+     global check_way
+     if(check_way==True):
+        make_csv("new_csv")
+        porting("Dataset_script1","new_csv")
+     else:
+        msg = QMessageBox()
+        msg.setWindowTitle("Ошибка!!!")
+        msg.setText("Хмммммм может быть уже введем нормальный путь или создадим первый csv файл ?!!!")
+        msg.setIcon(QMessageBox.Warning)
+        msg.exec_()
+
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
@@ -207,6 +305,8 @@ if __name__ == "__main__":
     ui.setupUi(Application )
     Application .show()
     app.setWindowIcon(QIcon('C:/Users/79093/Desktop/Application progra/laba3/GUI_lab/img/icon.ico'))
-    
     ui.EXIT.clicked.connect(push_Exit)
+    ui.take.clicked.connect(push_takePath)
+    ui.CreateFirstCSV.clicked.connect(script_1)
+    ui.IMPORTdataset.clicked.connect(script_2)
     sys.exit(app.exec_())
