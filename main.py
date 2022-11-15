@@ -6,6 +6,104 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import csv
 from pathlib import Path
 import shutil
+
+
+
+class Ui_Image(object):
+    def setupUi(self, Image):
+        Image.setObjectName("Image")
+        Image.resize(832, 734)
+        self.centralwidget = QtWidgets.QWidget(Image)
+        self.centralwidget.setStyleSheet("    background-color: #f5f0e1;")
+        self.centralwidget.setObjectName("centralwidget")
+        self.next_dog = QtWidgets.QPushButton(self.centralwidget)
+        self.next_dog.setGeometry(QtCore.QRect(20, 570, 301, 81))
+        self.next_dog.setStyleSheet("QPushButton{\n"
+"    background-color: #f5f0e1;\n"
+"    border: 4px solid #1e3d59;\n"
+"    border-radius: 30;\n"
+"    color:#1e3d59\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    background-color: #f5f0ef;\n"
+"}\n"
+"")
+        self.next_dog.setObjectName("next_dog")
+        self.next_cat = QtWidgets.QPushButton(self.centralwidget)
+        self.next_cat.setGeometry(QtCore.QRect(500, 570, 301, 81))
+        self.next_cat.setStyleSheet("QPushButton{\n"
+"    background-color: #f5f0e1;\n"
+"    border: 4px solid #1e3d59;\n"
+"    border-radius: 30;\n"
+"    color:#1e3d59\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    background-color: #f5f0ef;\n"
+"}\n"
+"")
+        self.next_cat.setObjectName("next_cat")
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setGeometry(QtCore.QRect(-490, 0, 2031, 161))
+        self.frame.setStyleSheet("background-color:#1e3d59\n"
+"")
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+        self.NAME = QtWidgets.QLabel(self.frame)
+        self.NAME.setGeometry(QtCore.QRect(690, 10, 381, 51))
+        font = QtGui.QFont()
+        font.setFamily("ROG Fonts")
+        font.setPointSize(10)
+        self.NAME.setFont(font)
+        self.NAME.setCursor(QtGui.QCursor(QtCore.Qt.CrossCursor))
+        self.NAME.setMouseTracking(False)
+        self.NAME.setStyleSheet("color:#f5f0e1")
+        self.NAME.setAlignment(QtCore.Qt.AlignCenter)
+        self.NAME.setObjectName("NAME")
+        self.go_back = QtWidgets.QPushButton(self.frame)
+        self.go_back.setGeometry(QtCore.QRect(500, 10, 61, 61))
+        self.go_back.setStyleSheet("QPushButton{\n"
+"    background-color: #f5f0e1;\n"
+"    border: 4px solid #1e3d59;\n"
+"    border-radius: 30;\n"
+"    color:#1e3d59\n"
+"}\n"
+"QPushButton:pressed{\n"
+"    background-color: #f5f0ef;\n"
+"}\n"
+"")
+        self.go_back.setObjectName("go_back")
+        self.Dogimg = QtWidgets.QLabel(self.centralwidget)
+        self.Dogimg.setGeometry(QtCore.QRect(50, 210, 321, 271))
+        self.Dogimg.setText("")
+        self.Dogimg.setObjectName("Dogimg")
+        self.Catimg = QtWidgets.QLabel(self.centralwidget)
+        self.Catimg.setGeometry(QtCore.QRect(470, 210, 321, 271))
+        self.Catimg.setText("")
+        self.Catimg.setObjectName("Catimg")
+        Image.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(Image)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 832, 26))
+        self.menubar.setObjectName("menubar")
+        Image.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(Image)
+        self.statusbar.setObjectName("statusbar")
+        Image.setStatusBar(self.statusbar)
+
+        self.retranslateUi(Image)
+        QtCore.QMetaObject.connectSlotsByName(Image)
+
+    def retranslateUi(self, Image):
+        _translate = QtCore.QCoreApplication.translate
+        Image.setWindowTitle(_translate("Image", "MainWindow"))
+        self.next_dog.setText(_translate("Image", "NEXT DOG"))
+        self.next_cat.setText(_translate("Image", "NEXT CAT"))
+        self.NAME.setText(_translate("Image", "The  coolest  app  in  the  world"))
+        self.go_back.setText(_translate("Image", "BACK"))
+
+
+
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -253,6 +351,41 @@ def porting(name_abstract: str, new_csv: str) -> None:
                 Way = f"dataset\{a[-2]}_{a[-1]}"
                 csv_file.writerow([fullWay, Way, name_class])
 
+def random_name(file_abstract: str, new_abstract: str) -> None:  # 3 путкт
+    """Функция импортируют файлы из собранного датасета в новый датасет с рандомным названием файла
+        так же создается новый csv для навого датасета  для того чтобы осталась возможность определить принадлежность экземпляра к классу
+    Args:
+        file_abstract (str): имя csv из которого берем путь, имя и класс
+        new_abstract (str):  имя csv файла в которой импортируем новый путь, имя и класс
+    """
+    b = []
+    for i in range(0, 10001):
+        b.append(i)
+    c = random.sample(b, 2200)
+    i = 0
+    try:
+        os.mkdir("dataset_random")
+    except:
+        print("====ФАЙЛ ИМЕЕТСЯ====")
+    with open(f"{file_abstract}.csv", newline="") as file:
+        read = csv.DictReader(file, delimiter=";")
+        for row in read:
+            FROM = row["Absolute path"]
+            a = FROM.split("/")
+            TO = f"dataset_random/{c[i]}.jpg"
+            i += 1
+            shutil.copyfile(FROM, TO)
+            class_obj = row["Class"]
+            with open(f"{new_abstract}.csv", "a", newline="") as file_new:
+                csv_file = csv.writer(file_new, delimiter=";")
+                slash1 = "\ "
+                slash2 = "/"
+                way = os.getcwd()
+                counter = way.count(slash1[0])
+                full_way = f"{way.replace(slash1[0],slash2,counter)}/{TO}"
+                csv_file.writerow([full_way, TO, class_obj])
+
+
 full_way=''
 check_way=False
 def push_Exit():
@@ -295,6 +428,38 @@ def script_2():
         msg.setText("Хмммммм может быть уже введем нормальный путь или создадим первый csv файл ?!!!")
         msg.setIcon(QMessageBox.Warning)
         msg.exec_()
+def script_3():
+    global check_way
+    if(check_way==True):
+        make_csv("random_csv")
+        random_name("Dataset_script1","random_csv")
+    else:
+        msg = QMessageBox()
+        msg.setWindowTitle("Ошибка!!!")
+        msg.setText("Установлен неверный путь!!!\nВведите путь еще раз!!!")
+        msg.setIcon(QMessageBox.Warning)
+        msg.exec_()
+
+
+def Open_window_two():
+    global Image
+    Image = QtWidgets.QMainWindow()
+    ui = Ui_Image()
+    ui.setupUi(Image)
+    Application.close()
+    Image.show()
+
+    def next_dog():
+        pass
+    def next_cat():
+        pass
+
+    def returnHub():
+        Image.close()
+        Application.show()
+
+    ui.go_back.clicked.connect(returnHub)
+
 
 
 if __name__ == "__main__":
@@ -309,4 +474,6 @@ if __name__ == "__main__":
     ui.take.clicked.connect(push_takePath)
     ui.CreateFirstCSV.clicked.connect(script_1)
     ui.IMPORTdataset.clicked.connect(script_2)
+    ui.RANDOM.clicked.connect(script_3)
+    ui.NEXTimg.clicked.connect(Open_window_two)
     sys.exit(app.exec_())
