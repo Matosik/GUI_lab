@@ -9,6 +9,7 @@ import shutil
 
 
 
+
 class Ui_Image(object):
     def setupUi(self, Image):
         Image.setObjectName("Image")
@@ -295,6 +296,31 @@ class Ui_MainWindow(object):
         self.NEXTimg.setText(_translate("MainWindow", "output next img"))
         self.take.setText(_translate("MainWindow", "take the path"))
         self.EXIT.setText(_translate("MainWindow", "EXIT"))
+#================================================================================================
+class IteratorM:
+    def __init__(self, file_name: str, class_name: str) -> None:
+        self.limit = -1
+        self.counter = -1
+        self.file_name = file_name
+        self.class_name = class_name
+        self.rows = []
+        with open(f"{file_name}.csv") as file:
+            reader = csv.reader(file, delimiter=";")
+            for row in reader:
+                if row[2] == class_name:
+                    self.rows.append(row[0] + ";" + row[2])
+                    self.limit += 1
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> str:
+        if self.counter < self.limit:
+            self.counter += 1
+            return (self.rows[self.counter])[:-6]
+        else:
+            print("None")
+            raise StopIteration
 
 def make_csv(name_csv: str) -> None:
     """Функция создает файл разрешения csv
@@ -388,6 +414,9 @@ def random_name(file_abstract: str, new_abstract: str) -> None:  # 3 путкт
 
 full_way=''
 check_way=False
+check_dataset=False
+first_csv=""
+check_firstCSV=False
 def push_Exit():
     sys.exit(app.exec_())
 def push_takePath():
@@ -405,12 +434,28 @@ def push_takePath():
         check_way=True
         print( full_way)
 
+def make_iter():
+    global li_cat
+    global li_dog
+    global ro
+    class_dog = "DogIT"
+    li_dog = IteratorM("Dataset_firstCSV", class_dog)
+    class_cat = "CatIT"
+    li_cat = IteratorM("Dataset_firstCSV", class_cat)
 def script_1():
      global check_way
+     global first_csv
+     global check_firstCSV
+     global check_file
      if(check_way==True):
-        make_csv("Dataset_script1")
-        make_file_abstract("DogsIT", full_way,"Dataset_script1" )
-        make_file_abstract("CatIT", full_way, "Dataset_script1")
+        first_csv = "Dataset_firstCSV"
+        make_csv(first_csv)
+        make_file_abstract("DogIT", full_way,first_csv )
+        make_file_abstract("CatIT", full_way, first_csv)
+        check_firstCSV=True
+        check_file=True
+        if(ro==0):
+            make_iter()
      else:
         msg = QMessageBox()
         msg.setWindowTitle("Ошибка!!!")
@@ -418,21 +463,26 @@ def script_1():
         msg.setIcon(QMessageBox.Warning)
         msg.exec_()
 def script_2():
-     global check_way
-     if(check_way==True):
-        make_csv("new_csv")
-        porting("Dataset_script1","new_csv")
-     else:
+    global first_csv
+    global check_way
+    global check_firstCSV
+    if(check_firstCSV==True):
+        class_csv= "dataset_class"
+        make_csv(class_csv)
+        porting(first_csv,class_csv)
+    else:
         msg = QMessageBox()
         msg.setWindowTitle("Ошибка!!!")
-        msg.setText("Хмммммм может быть уже введем нормальный путь или создадим первый csv файл ?!!!")
+        msg.setText("Пожалуйста создайте первый CSV файл, чтобы продолжить")
         msg.setIcon(QMessageBox.Warning)
         msg.exec_()
 def script_3():
     global check_way
-    if(check_way==True):
-        make_csv("random_csv")
-        random_name("Dataset_script1","random_csv")
+    global first_csv
+    if(check_file==True):
+        random_csv= "dataset_random"
+        make_csv(random_csv)
+        random_name(first_csv,random_csv)
     else:
         msg = QMessageBox()
         msg.setWindowTitle("Ошибка!!!")
@@ -442,28 +492,52 @@ def script_3():
 
 
 def Open_window_two():
-    global Image
-    Image = QtWidgets.QMainWindow()
-    ui = Ui_Image()
-    ui.setupUi(Image)
-    Application.close()
-    Image.show()
+    global first_csv
+    global check_file
+    global li_cat
+    global li_dog
+    if(check_file):
+        global Image
+        global li_dog
+        global li_cat
+        Image = QtWidgets.QMainWindow()
+        ui = Ui_Image()
+        ui.setupUi(Image)
+        Application.close()
+        Image.show()
+        def button_dog():
+            a=next(li_dog)
+            ui.Dogimg.setPixmap(QtGui.QPixmap(a))
+            print(a)
+        def button_cat():
+            b=next(li_cat)
+            ui.Catimg.setPixmap(QtGui.QPixmap(b))
+            print(b)
 
-    def next_dog():
-        pass
-    def next_cat():
-        pass
+        def returnHub():
+            Image.close()
+            Application.show()
 
-    def returnHub():
-        Image.close()
-        Application.show()
-
-    ui.go_back.clicked.connect(returnHub)
+        ui.go_back.clicked.connect(returnHub)
+        ui.next_dog.clicked.connect(button_dog)
+        ui.next_cat.clicked.connect(button_cat)
+    else:
+        msg = QMessageBox()
+        msg.setWindowTitle("Ошибка!!!")
+        msg.setText("Вы еще не создали первый CSV файл\nПожалуйста, нажмите на кнопку 'Create the first csv file' и повторите попытку ")
+        msg.setIcon(QMessageBox.Warning)
+        msg.exec_()
 
 
 
 if __name__ == "__main__":
     import sys
+    ro=0
+    check_file=os.path.exists("Dataset_firstCSV.csv")
+    if(check_file==True):
+        first_csv="Dataset_firstCSV"
+        make_iter()
+        ro=1
     app = QtWidgets.QApplication(sys.argv)
     Application = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

@@ -1,4 +1,5 @@
 test.py
-TEST_testov.py
 *.csv
 dataset
+dataset
+dataset_random
